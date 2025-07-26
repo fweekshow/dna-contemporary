@@ -1,0 +1,80 @@
+# Base Miniapp Development Rules for DNA Contemporary
+
+## Project Context
+You are working on "DNA Contemporary" - an art marketplace built as a Base miniapp using Next.js, TypeScript, and MiniKit. The app allows artists to upload artwork and users to purchase with Base Pay.
+
+## Tech Stack
+- Next.js 14 with App Router
+- TypeScript
+- Tailwind CSS + shadcn/ui
+- MiniKit (@coinbase/onchainkit/minikit)
+- Base network integration
+- Vercel deployment
+
+## Key Files & Structure
+- `src/app/page.tsx` - Main marketplace with tabs (Browse, Upload, Connect)
+- `src/app/providers.tsx` - MiniKit provider setup
+- `src/app/layout.tsx` - Root layout with providers
+- `public/.well-known/farcaster.json` - Base miniapp manifest
+- `src/components/ui/` - shadcn/ui components
+
+## Base Miniapp Features
+- Primary Button: "BROWSE ART" 
+- Frame sharing with useAddFrame
+- Notifications with useNotification
+- Profile viewing with useViewProfile
+- Close functionality with useClose
+
+## Development Rules
+1. Always use TypeScript for type safety
+2. Follow shadcn/ui patterns for components
+3. Use MiniKit hooks for Base App integration
+4. Maintain responsive design with Tailwind
+5. Keep localStorage for temporary persistence
+6. Use proper error handling for async operations
+
+## Import Patterns
+```typescript
+// MiniKit imports
+import { 
+  useMiniKit, 
+  useAddFrame, 
+  useClose, 
+  usePrimaryButton, 
+  useViewProfile, 
+  useNotification 
+} from '@coinbase/onchainkit/minikit'
+
+// UI components
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+
+// Icons
+import { Upload, Store, User, Bell, X } from "lucide-react"
+```
+
+## Common Patterns
+- Use "use client" directive for client components
+- Wrap with MiniKitProvider in layout
+- Handle file uploads with FileReader API
+- Store artwork data in localStorage (temporary)
+- Use Base Pay buttons for purchases
+
+## Current Issues to Watch
+- MiniKit import paths may need adjustment
+- localStorage quota limits with image data
+- Vercel build errors with dependencies
+- Environment variables for production
+
+## Next Steps
+1. Fix Vercel build errors
+2. Deploy to get live domain
+3. Add Base Pay integration
+4. Implement Cloudinary + Supabase storage
+5. Connect Base Account for user profiles
+
+## Base Documentation References
+- Miniapp docs: https://docs.base.org/base-app/introduction/getting-started
+- MiniKit docs: https://docs.base.org/onchainkit/wallet/wallet
+- Base Pay: https://docs.base.org/base-pay
+- Base Account: https://docs.base.org/base-account 

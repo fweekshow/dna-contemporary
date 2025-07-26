@@ -18,6 +18,7 @@ import {
   useViewProfile, 
   useNotification 
 } from '@coinbase/onchainkit/minikit'
+import { Wallet } from '@coinbase/onchainkit/wallet'
 
 
 export default function DNAContemporary() {
@@ -218,6 +219,9 @@ export default function DNAContemporary() {
           </div>
           
           <div className="flex items-center space-x-2">
+            {/* Wallet Component */}
+            <Wallet />
+            
             {/* MiniKit Frame Controls */}
             <Button 
               variant="outline" 
