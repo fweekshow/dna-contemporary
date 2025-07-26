@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Upload, Store, User, X, Bell } from "lucide-react"
+import { Upload, Store, X, Bell } from "lucide-react"
 import { 
   useMiniKit, 
   useAddFrame, 
@@ -35,7 +34,6 @@ export default function DNAContemporary() {
   // Debug: Log when uploadedArtworks changes (only count, not full data)
   console.log('Current uploadedArtworks count:', uploadedArtworks.length)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [isConnected, setIsConnected] = useState(false)
   const [notificationSent, setNotificationSent] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
 
@@ -60,7 +58,7 @@ export default function DNAContemporary() {
       try {
         const parsed = JSON.parse(savedArtworks)
         // Add placeholder images for loaded artworks since we don't store image data
-        const artworksWithPlaceholders = parsed.map((art: any) => ({
+        const artworksWithPlaceholders = parsed.map((art: { id: string; title: string; description: string; price: number; artist: string }) => ({
           ...art,
           image: '/placeholder.svg' // Use placeholder since we can't store image data
         }))
