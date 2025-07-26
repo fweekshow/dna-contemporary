@@ -1,0 +1,26 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjgxODAyNi...",
+    "payload": "eyJkb21haW4iOiJkbmFjb250ZW1wb3JhcnkuY29tIn0=",
+    "signature": "MHhmOGQ1YzQyMmU3ZTZlMWNhMzU1..."
+  },
+  "frame": {
+    "version": "1",
+    "name": "DNA Contemporary",
+    "subtitle": "Art Marketplace on Base",
+    "description": "Discover and sell unique art with Base Pay. Connect your store or upload individual pieces.",
+    "iconUrl": "https://dnacontemporary.com/icon.png",
+    "homeUrl": "https://dnacontemporary.com",
+    "splashImageUrl": "https://dnacontemporary.com/splash.png",
+    "splashBackgroundColor": "#f8fafc",
+    "heroImageUrl": "https://dnacontemporary.com/hero.png",
+    "tagline": "Art marketplace powered by Base",
+    "screenshotUrls": [
+      "https://dnacontemporary.com/screenshot1.png",
+      "https://dnacontemporary.com/screenshot2.png"
+    ],
+    "primaryCategory": "art-creativity",
+    "tags": ["art", "marketplace", "nft", "base", "onchain"],
+    "webhookUrl": "https://dnacontemporary.com/api/webhook"
+  }
+} 

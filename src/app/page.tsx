@@ -1,103 +1,513 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState, useEffect } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Upload, Store, User, X, Bell } from "lucide-react"
+import { 
+  useMiniKit, 
+  useAddFrame, 
+  useClose, 
+  usePrimaryButton, 
+  useViewProfile, 
+  useNotification 
+} from '@coinbase/onchainkit/minikit'
+
+
+export default function DNAContemporary() {
+  const [activeTab, setActiveTab] = useState("browse")
+  const [uploadedArtworks, setUploadedArtworks] = useState<Array<{
+    id: string
+    title: string
+    description: string
+    image: string
+    price: number
+    artist: string
+  }>>([])
+
+  // Debug: Log when uploadedArtworks changes (only count, not full data)
+  console.log('Current uploadedArtworks count:', uploadedArtworks.length)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
+  const [notificationSent, setNotificationSent] = useState(false)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+
+  // MiniKit hooks
+  const { setFrameReady, isFrameReady, context } = useMiniKit()
+  const addFrame = useAddFrame()
+  const close = useClose()
+  const viewProfile = useViewProfile()
+  const sendNotification = useNotification()
+
+  // Set frame ready when component mounts
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady()
+    }
+  }, [setFrameReady, isFrameReady])
+
+  // Load uploaded artworks from localStorage on component mount
+  useEffect(() => {
+    const savedArtworks = localStorage.getItem('dna-contemporary-artworks')
+    if (savedArtworks) {
+      try {
+        const parsed = JSON.parse(savedArtworks)
+        // Add placeholder images for loaded artworks since we don't store image data
+        const artworksWithPlaceholders = parsed.map((art: any) => ({
+          ...art,
+          image: '/placeholder.svg' // Use placeholder since we can't store image data
+        }))
+        setUploadedArtworks(artworksWithPlaceholders)
+        console.log('Loaded artworks from localStorage:', artworksWithPlaceholders)
+      } catch (error) {
+        console.error('Error loading artworks from localStorage:', error)
+      }
+    }
+  }, [])
+
+  // Save uploaded artworks to localStorage whenever they change
+  useEffect(() => {
+    if (uploadedArtworks.length > 0) {
+      try {
+        // Remove image data from localStorage to avoid quota issues
+        const artworksForStorage = uploadedArtworks.map(art => ({
+          id: art.id,
+          title: art.title,
+          description: art.description,
+          price: art.price,
+          artist: art.artist
+          // Don't store image data in localStorage
+        }))
+        localStorage.setItem('dna-contemporary-artworks', JSON.stringify(artworksForStorage))
+        console.log('Saved artworks metadata to localStorage:', artworksForStorage)
+      } catch (error) {
+        console.error('Error saving to localStorage:', error)
+      }
+    }
+  }, [uploadedArtworks])
+
+  // Primary button for browsing
+  usePrimaryButton(
+    { text: 'BROWSE ART' },
+    () => {
+      setActiveTab("browse")
+    }
+  )
+
+  // Handle add frame
+  const handleAddFrame = async () => {
+    const result = await addFrame()
+    if (result) {
+      console.log('Frame added:', result.url, result.token)
+      // In production, save these to your database
+    }
+  }
+
+  // Handle send notification
+  const handleSendNotification = async () => {
+    try {
+      await sendNotification({
+        title: 'New Art Available! 🎨',
+        body: 'Check out the latest pieces in DNA Contemporary'
+      })
+      setNotificationSent(true)
+      setTimeout(() => setNotificationSent(false), 3000)
+    } catch (error) {
+      console.error('Failed to send notification:', error)
+    }
+  }
+
+  // Handle view profile
+  const handleViewProfile = () => {
+    viewProfile()
+  }
+
+  // Handle file upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    console.log('File selected:', file)
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string
+        console.log('Image loaded, creating artwork entry')
+        setSelectedImage(imageUrl)
+        // Store the uploaded image temporarily
+        setUploadedArtworks(prev => [...prev, {
+          id: Date.now().toString(),
+          title: "New Artwork",
+          description: "Uploaded artwork",
+          image: imageUrl,
+          price: 1000,
+          artist: "Artist"
+        }])
+        console.log('Artwork added to state')
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Handle form submission
+  const handleUploadSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    console.log('Form submitted')
+    const formData = new FormData(event.currentTarget)
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const price = parseFloat(formData.get('price') as string)
+    const artist = formData.get('artist') as string
+
+    console.log('Form data:', { title, description, price, artist })
+    console.log('Current uploadedArtworks before update:', uploadedArtworks)
+
+    // Update the latest uploaded artwork with form data
+    if (uploadedArtworks.length > 0) {
+      const latestArtwork = uploadedArtworks[uploadedArtworks.length - 1]
+      console.log('Updating artwork:', latestArtwork.id)
+      setUploadedArtworks(prev => {
+        const updated = prev.map(art => 
+          art.id === latestArtwork.id 
+            ? { ...art, title, description, price, artist }
+            : art
+        )
+        console.log('Updated artworks:', updated)
+        return updated
+      })
+    } else {
+      console.log('No uploaded artworks found - creating new one')
+      // If no artwork exists, create a new one with the form data
+      const newArtwork = {
+        id: Date.now().toString(),
+        title,
+        description,
+        image: selectedImage || '/placeholder.svg',
+        price,
+        artist
+      }
+      setUploadedArtworks(prev => {
+        const updated = [...prev, newArtwork]
+        console.log('Created new artwork:', updated)
+        return updated
+      })
+    }
+
+    // Switch back to browse tab to see the uploaded artwork
+    setActiveTab("browse")
+    setUploadSuccess(true)
+    setSelectedImage(null)
+    console.log('Switched to browse tab')
+    
+    // Reset success message after 3 seconds
+    setTimeout(() => setUploadSuccess(false), 3000)
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold text-slate-900">DNA Contemporary</h1>
+            <Badge variant="secondary" className="text-xs">Art Marketplace</Badge>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            {/* MiniKit Frame Controls */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleAddFrame}
+              className="text-xs"
+            >
+              Save Frame
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleViewProfile}
+              className="text-xs"
+            >
+              Profile
+            </Button>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {context?.client.added && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSendNotification}
+                disabled={notificationSent}
+                className="text-xs"
+              >
+                <Bell className="w-3 h-3 mr-1" />
+                {notificationSent ? 'Sent!' : 'Notify'}
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={close}
+              className="text-xs"
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsTrigger value="browse" className="flex items-center space-x-2">
+              <Store className="w-4 h-4" />
+              <span>Browse Art</span>
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="flex items-center space-x-2">
+              <Upload className="w-4 h-4" />
+              <span>Upload Art</span>
+            </TabsTrigger>
+            <TabsTrigger value="connect" className="flex items-center space-x-2">
+              <Store className="w-4 h-4" />
+              <span>Connect Store</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Browse Art Tab */}
+          <TabsContent value="browse" className="space-y-6">
+            {uploadSuccess && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <p className="text-green-800 text-sm">✓ Artwork uploaded successfully! Your piece is now available for purchase.</p>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-slate-900">Discover Art</h2>
+              <div className="flex items-center space-x-2">
+                <Input placeholder="Search art..." className="w-64" />
+                <Button variant="outline">Filter</Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Featured Artwork */}
+              <Card className="group hover:shadow-lg transition-shadow">
+                <div className="aspect-square bg-gradient-to-br from-purple-900 to-green-900 rounded-t-lg flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/LifeAfterDeath.png" 
+                    alt="Life After Death - Neon Green Skull Artwork" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-slate-900">Life After Death</h3>
+                    <Badge variant="outline" className="text-xs">Contemporary</Badge>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-3">A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.</p>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900">$2,850.00</span>
+                    <Button 
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => {
+                        // Base Pay integration would go here
+                        console.log('Base Pay purchase for Life After Death')
+                      }}
+                    >
+                      Buy on Base
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Uploaded Artworks */}
+              {uploadedArtworks.map((artwork) => (
+                <Card key={artwork.id} className="group hover:shadow-lg transition-shadow">
+                  <div className="aspect-square bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg flex items-center justify-center overflow-hidden">
+                    <img 
+                      src={artwork.image} 
+                      alt={artwork.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-slate-900">{artwork.title}</h3>
+                      <Badge variant="outline" className="text-xs">{artwork.artist}</Badge>
+                    </div>
+                    <p className="text-sm text-slate-600 mb-3">{artwork.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">${artwork.price.toLocaleString()}</span>
+                      <Button 
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => {
+                          // Base Pay integration would go here
+                          console.log(`Base Pay purchase for ${artwork.title}`)
+                        }}
+                      >
+                        Buy on Base
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Sample Art Cards */}
+              {[1, 2, 3, 4, 5, 6, 7].map((item) => (
+                <Card key={item} className="group hover:shadow-lg transition-shadow">
+                  <div className="aspect-square bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg flex items-center justify-center">
+                    <span className="text-slate-500">Art Preview</span>
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-slate-900">Artwork #{item + 1}</h3>
+                      <Badge variant="outline" className="text-xs">Artist</Badge>
+                    </div>
+                    <p className="text-sm text-slate-600 mb-3">Contemporary artwork with unique style and expression</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900">$1,250</span>
+                      <Button 
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => {
+                          // Base Pay integration would go here
+                          console.log(`Base Pay purchase for Artwork #${item + 1}`)
+                        }}
+                      >
+                        Buy on Base
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Upload Art Tab */}
+          <TabsContent value="upload" className="space-y-6">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl font-semibold text-slate-900 mb-6">Upload Your Art</h2>
+              
+              <form onSubmit={handleUploadSubmit}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Artwork Details</CardTitle>
+                    <CardDescription>Share your artwork with the DNA Contemporary community</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Artwork Title</Label>
+                      <Input id="title" name="title" placeholder="Enter artwork title" required />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="artist">Artist Name</Label>
+                      <Input id="artist" name="artist" placeholder="Your name" required />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea id="description" name="description" placeholder="Describe your artwork..." rows={3} required />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="price">Price (USD)</Label>
+                      <Input id="price" name="price" type="number" placeholder="0.00" min="0" step="0.01" required />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="image">Upload Image</Label>
+                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
+                        <input
+                          type="file"
+                          id="image"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          required
+                        />
+                        <label htmlFor="image" className="cursor-pointer">
+                          {selectedImage ? (
+                            <div className="space-y-2">
+                              <img 
+                                src={selectedImage} 
+                                alt="Preview" 
+                                className="w-32 h-32 mx-auto object-cover rounded-lg"
+                              />
+                              <p className="text-sm text-green-600">✓ Image uploaded successfully!</p>
+                            </div>
+                          ) : (
+                            <>
+                              <Upload className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+                              <p className="text-sm text-slate-600">Click to upload or drag and drop</p>
+                              <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB</p>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <Button type="submit" className="w-full">Upload Artwork</Button>
+                  </CardContent>
+                </Card>
+              </form>
+            </div>
+          </TabsContent>
+
+          {/* Connect Store Tab */}
+          <TabsContent value="connect" className="space-y-6">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl font-semibold text-slate-900 mb-6">Connect Your Store</h2>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Store Integration</CardTitle>
+                  <CardDescription>Connect your existing store to reach more customers</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="store-type">Store Platform</Label>
+                    <select id="store-type" className="w-full p-2 border border-slate-300 rounded-md">
+                      <option>Select platform...</option>
+                      <option>Shopify</option>
+                      <option>WooCommerce</option>
+                      <option>Custom API</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="store-url">Store URL</Label>
+                    <Input id="store-url" placeholder="https://yourstore.com" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="api-key">API Key (if required)</Label>
+                    <Input id="api-key" type="password" placeholder="Enter API key" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="commission">Commission Rate (%)</Label>
+                    <Input id="commission" type="number" placeholder="5" />
+                    <p className="text-xs text-slate-500">Percentage of each sale that goes to DNA Contemporary</p>
+                  </div>
+                  
+                  <Button className="w-full">Connect Store</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+
     </div>
-  );
+  )
 }
