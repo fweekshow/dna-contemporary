@@ -267,7 +267,7 @@ export default function DNAContemporary() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="browse" className="flex items-center space-x-2">
               <Store className="w-4 h-4" />
               <span>Browse Art</span>
@@ -275,10 +275,6 @@ export default function DNAContemporary() {
             <TabsTrigger value="upload" className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
               <span>Upload Art</span>
-            </TabsTrigger>
-            <TabsTrigger value="connect" className="flex items-center space-x-2">
-              <Store className="w-4 h-4" />
-              <span>Connect Store</span>
             </TabsTrigger>
           </TabsList>
 
@@ -464,48 +460,7 @@ export default function DNAContemporary() {
             </div>
           </TabsContent>
 
-          {/* Connect Store Tab */}
-          <TabsContent value="connect" className="space-y-6">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="text-2xl font-semibold text-slate-900 mb-6">Connect Your Store</h2>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Store Integration</CardTitle>
-                  <CardDescription>Connect your existing store to reach more customers</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="store-type">Store Platform</Label>
-                    <select id="store-type" className="w-full p-2 border border-slate-300 rounded-md">
-                      <option>Select platform...</option>
-                      <option>Shopify</option>
-                      <option>WooCommerce</option>
-                      <option>Custom API</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="store-url">Store URL</Label>
-                    <Input id="store-url" placeholder="https://yourstore.com" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="api-key">API Key (if required)</Label>
-                    <Input id="api-key" type="password" placeholder="Enter API key" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="commission">Commission Rate (%)</Label>
-                    <Input id="commission" type="number" placeholder="5" />
-                    <p className="text-xs text-slate-500">Percentage of each sale that goes to DNA Contemporary</p>
-                  </div>
-                  
-                  <Button className="w-full">Connect Store</Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+
         </Tabs>
       </main>
 
