@@ -8,20 +8,29 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Store, X, Bell } from "lucide-react"
+import { Upload, Store, Bell, Heart, Users } from "lucide-react"
+import Image from "next/image"
 import { 
   useMiniKit, 
-  useAddFrame, 
-  useClose, 
   usePrimaryButton, 
-  useViewProfile, 
   useNotification 
 } from '@coinbase/onchainkit/minikit'
 import { Wallet } from '@coinbase/onchainkit/wallet'
+import { SwipeGallery } from '@/components/swipe-gallery'
+import { ArtistSearch } from '@/components/artist-search'
 
 
 export default function DNAContemporary() {
   const [activeTab, setActiveTab] = useState("browse")
+  const [isMobile, setIsMobile] = useState(false)
+  const [likedArtworks, setLikedArtworks] = useState<Array<{
+    id: string
+    title: string
+    description: string
+    image: string
+    price: number
+    artist: string
+  }>>([])
   const [uploadedArtworks, setUploadedArtworks] = useState<Array<{
     id: string
     title: string
@@ -39,9 +48,6 @@ export default function DNAContemporary() {
 
   // MiniKit hooks
   const { setFrameReady, isFrameReady, context } = useMiniKit()
-  const addFrame = useAddFrame()
-  const close = useClose()
-  const viewProfile = useViewProfile()
   const sendNotification = useNotification()
 
   // Set frame ready when component mounts
@@ -50,6 +56,18 @@ export default function DNAContemporary() {
       setFrameReady()
     }
   }, [setFrameReady, isFrameReady])
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Load uploaded artworks from localStorage on component mount
   useEffect(() => {
@@ -99,15 +117,6 @@ export default function DNAContemporary() {
     }
   )
 
-  // Handle add frame
-  const handleAddFrame = async () => {
-    const result = await addFrame()
-    if (result) {
-      console.log('Frame added:', result.url, result.token)
-      // In production, save these to your database
-    }
-  }
-
   // Handle send notification
   const handleSendNotification = async () => {
     try {
@@ -122,9 +131,14 @@ export default function DNAContemporary() {
     }
   }
 
-  // Handle view profile
-  const handleViewProfile = () => {
-    viewProfile()
+  // Handle swipe actions
+  const handleLike = (artwork: any) => {
+    setLikedArtworks(prev => [...prev, artwork])
+    console.log('Liked:', artwork.title)
+  }
+
+  const handlePass = (artwork: any) => {
+    console.log('Passed:', artwork.title)
   }
 
   // Handle file upload
@@ -220,25 +234,6 @@ export default function DNAContemporary() {
             {/* Wallet Component */}
             <Wallet />
             
-            {/* MiniKit Frame Controls */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleAddFrame}
-              className="text-xs"
-            >
-              Save Frame
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleViewProfile}
-              className="text-xs"
-            >
-              Profile
-            </Button>
-
             {context?.client.added && (
               <Button 
                 variant="outline" 
@@ -251,15 +246,6 @@ export default function DNAContemporary() {
                 {notificationSent ? 'Sent!' : 'Notify'}
               </Button>
             )}
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={close}
-              className="text-xs"
-            >
-              <X className="w-3 h-3" />
-            </Button>
           </div>
         </div>
       </header>
@@ -267,10 +253,14 @@ export default function DNAContemporary() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="browse" className="flex items-center space-x-2">
               <Store className="w-4 h-4" />
               <span>Browse Art</span>
+            </TabsTrigger>
+            <TabsTrigger value="artists" className="flex items-center space-x-2">
+              <Users className="w-4 h-4" />
+              <span>Artists</span>
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
@@ -285,21 +275,62 @@ export default function DNAContemporary() {
                 <p className="text-green-800 text-sm">✓ Artwork uploaded successfully! Your piece is now available for purchase.</p>
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-slate-900">Discover Art</h2>
-              <div className="flex items-center space-x-2">
-                <Input placeholder="Search art..." className="w-64" />
-                <Button variant="outline">Filter</Button>
+            
+            {/* Mobile Swipe Interface */}
+            {isMobile ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold text-slate-900">Swipe Art</h2>
+                  <Badge variant="secondary" className="text-xs">
+                    {likedArtworks.length} liked
+                  </Badge>
+                </div>
+                
+                <SwipeGallery 
+                  artworks={[
+                    {
+                      id: "featured-1",
+                      title: "Life After Death",
+                      description: "A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.",
+                      image: "/LifeAfterDeath.png",
+                      price: 2850,
+                      artist: "Contemporary Artist"
+                    },
+                    ...uploadedArtworks,
+                    // Add sample artworks for swiping
+                    ...Array.from({ length: 7 }, (_, i) => ({
+                      id: `sample-${i + 1}`,
+                      title: `Artwork #${i + 2}`,
+                      description: "Contemporary artwork with unique style and expression",
+                      image: "/placeholder.svg",
+                      price: 1250,
+                      artist: "Artist"
+                    }))
+                  ]}
+                  onLike={handleLike}
+                  onPass={handlePass}
+                />
               </div>
-            </div>
+            ) : (
+              // Desktop Grid Layout
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold text-slate-900">Discover Art</h2>
+                  <div className="flex items-center space-x-2">
+                    <Input placeholder="Search art..." className="w-64" />
+                    <Button variant="outline">Filter</Button>
+                  </div>
+                </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* Featured Artwork */}
               <Card className="group hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gradient-to-br from-purple-900 to-green-900 rounded-t-lg flex items-center justify-center overflow-hidden">
-                  <img 
+                  <Image 
                     src="/LifeAfterDeath.png" 
                     alt="Life After Death - Neon Green Skull Artwork" 
+                    width={400}
+                    height={400}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -329,9 +360,11 @@ export default function DNAContemporary() {
               {uploadedArtworks.map((artwork) => (
                 <Card key={artwork.id} className="group hover:shadow-lg transition-shadow">
                   <div className="aspect-square bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg flex items-center justify-center overflow-hidden">
-                    <img 
+                    <Image 
                       src={artwork.image} 
                       alt={artwork.title} 
+                      width={400}
+                      height={400}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -386,6 +419,38 @@ export default function DNAContemporary() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Artists Tab */}
+          <TabsContent value="artists" className="space-y-6">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl font-semibold text-slate-900 mb-6">Search by Artist</h2>
+              
+              <ArtistSearch 
+                artworks={[
+                  {
+                    id: "featured-1",
+                    title: "Life After Death",
+                    description: "A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.",
+                    image: "/LifeAfterDeath.png",
+                    price: 2850,
+                    artist: "Contemporary Artist"
+                  },
+                  ...uploadedArtworks,
+                  // Add sample artworks
+                  ...Array.from({ length: 7 }, (_, i) => ({
+                    id: `sample-${i + 1}`,
+                    title: `Artwork #${i + 2}`,
+                    description: "Contemporary artwork with unique style and expression",
+                    image: "/placeholder.svg",
+                    price: 1250,
+                    artist: "Artist"
+                  }))
+                ]}
+              />
             </div>
           </TabsContent>
 
