@@ -14,6 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Preconnect to Farcaster Auth Server for better performance */}
+        <link rel="preconnect" href="https://auth.farcaster.xyz" />
+      </head>
       <body
         className="antialiased"
       >

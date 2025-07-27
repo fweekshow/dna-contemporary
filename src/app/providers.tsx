@@ -1,10 +1,11 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useEffect } from "react"
 import { MiniKitProvider } from '@coinbase/onchainkit/minikit'
 import { base } from 'viem/chains'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { coinbaseWallet } from 'wagmi/connectors'
+import { sdk } from "@farcaster/miniapp-sdk"
 
 const wagmiConfig = createConfig({
   chains: [base],
@@ -20,6 +21,21 @@ const wagmiConfig = createConfig({
 })
 
 export function Providers({ children }: { children: ReactNode }) {
+  // Initialize Farcaster SDK and call ready
+  useEffect(() => {
+    const initializeFarcaster = async () => {
+      try {
+        // Call ready to signal the app is ready
+        sdk.actions.ready()
+        console.log('Farcaster SDK initialized and ready')
+      } catch (error) {
+        console.error('Error initializing Farcaster SDK:', error)
+      }
+    }
+
+    initializeFarcaster()
+  }, [])
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <MiniKitProvider

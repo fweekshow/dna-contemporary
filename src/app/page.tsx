@@ -18,6 +18,7 @@ import {
 import { Wallet } from '@coinbase/onchainkit/wallet'
 import { SwipeGallery } from '@/components/swipe-gallery'
 import { ArtistSearch } from '@/components/artist-search'
+import { sdk } from "@farcaster/miniapp-sdk"
 
 
 export default function DNAContemporary() {
@@ -50,11 +51,24 @@ export default function DNAContemporary() {
   const { setFrameReady, isFrameReady, context } = useMiniKit()
   const sendNotification = useNotification()
 
-  // Set frame ready when component mounts
+  // Set frame ready when component mounts and initialize Farcaster
   useEffect(() => {
     if (!isFrameReady) {
       setFrameReady()
     }
+    
+    // Initialize Farcaster SDK and call ready
+    const initializeFarcaster = async () => {
+      try {
+        // Call ready to signal the app is ready
+        await sdk.actions.ready()
+        console.log('Farcaster SDK ready called from main page')
+      } catch (error) {
+        console.error('Error calling Farcaster SDK ready:', error)
+      }
+    }
+
+    initializeFarcaster()
   }, [setFrameReady, isFrameReady])
 
   // Check if device is mobile
