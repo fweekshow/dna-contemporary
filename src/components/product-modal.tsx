@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import type { Artwork } from "@/types"
+import Image from "next/image"
 
 interface ProductModalProps {
   artwork: Artwork
@@ -33,9 +34,11 @@ export default function ProductModal({ artwork, onClose }: ProductModalProps) {
               className={`relative overflow-hidden rounded-lg cursor-zoom-in ${isZoomed ? "cursor-zoom-out" : ""}`}
               onClick={() => setIsZoomed(!isZoomed)}
             >
-              <img
+              <Image
                 src={artwork.image || "/placeholder.svg"}
                 alt={artwork.title}
+                width={600}
+                height={400}
                 className={`w-full transition-transform duration-300 ${isZoomed ? "scale-150" : "scale-100"}`}
               />
               <div className="absolute top-4 left-4">
@@ -47,10 +50,12 @@ export default function ProductModal({ artwork, onClose }: ProductModalProps) {
 
             <div className="flex gap-2">
               {artwork.additionalImages?.map((img, index) => (
-                <img
+                <Image
                   key={index}
                   src={img || "/placeholder.svg"}
                   alt={`Additional view ${index + 1}`}
+                  width={80}
+                  height={80}
                   className="w-20 h-20 object-cover rounded-md cursor-pointer hover:opacity-80"
                 />
               ))}
@@ -61,9 +66,11 @@ export default function ProductModal({ artwork, onClose }: ProductModalProps) {
           <div className="space-y-6">
             {/* Artist Info */}
             <div className="flex items-center gap-4">
-              <img
+              <Image
                 src={artwork.artist.avatar || "/placeholder.svg"}
                 alt={artwork.artist.name}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div>

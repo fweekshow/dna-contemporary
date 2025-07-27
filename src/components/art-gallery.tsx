@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Heart, ShoppingCart } from "lucide-react"
 import { mockArtworks } from "@/data/mock-data"
 import type { Artwork } from "@/types"
+import Image from "next/image"
 
 interface ArtGalleryProps {
   onArtworkClick: (artwork: Artwork) => void
@@ -31,9 +32,11 @@ export default function ArtGallery({ onArtworkClick }: ArtGalleryProps) {
               onClick={() => onArtworkClick(artwork)}
             >
               <div className="relative overflow-hidden">
-                <img
+                <Image
                   src={artwork.image || "/placeholder.svg"}
                   alt={artwork.title}
+                  width={400}
+                  height={256}
                   className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 left-3">
@@ -51,9 +54,11 @@ export default function ArtGallery({ onArtworkClick }: ArtGalleryProps) {
 
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <img
+                  <Image
                     src={artwork.artist.avatar || "/placeholder.svg"}
                     alt={artwork.artist.name}
+                    width={24}
+                    height={24}
                     className="w-6 h-6 rounded-full object-cover"
                   />
                   <span className="text-sm text-muted-foreground">{artwork.artist.name}</span>

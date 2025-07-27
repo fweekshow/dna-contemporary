@@ -278,7 +278,7 @@ export default function DNAContemporary() {
             
             {/* Mobile Swipe Interface */}
             {isMobile ? (
-              <div className="space-y-6">
+              <div className="space-y-6 overflow-hidden">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold text-slate-900">Swipe Art</h2>
                   <Badge variant="secondary" className="text-xs">
@@ -500,9 +500,11 @@ export default function DNAContemporary() {
                         <label htmlFor="image" className="cursor-pointer">
                           {selectedImage ? (
                             <div className="space-y-2">
-                              <img 
+                              <Image 
                                 src={selectedImage} 
                                 alt="Preview" 
+                                width={128}
+                                height={128}
                                 className="w-32 h-32 mx-auto object-cover rounded-lg"
                               />
                               <p className="text-sm text-green-600">✓ Image uploaded successfully!</p>

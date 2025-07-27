@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { mockArtists } from "@/data/mock-data"
+import Image from "next/image"
 
 interface TrendingArtistsProps {
   searchQuery: string
@@ -63,9 +64,11 @@ export default function TrendingArtists({ searchQuery }: TrendingArtistsProps) {
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="relative">
-                    <img
+                    <Image
                       src={artist.avatar || "/placeholder.svg"}
                       alt={artist.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-background"></div>
@@ -91,10 +94,12 @@ export default function TrendingArtists({ searchQuery }: TrendingArtistsProps) {
 
                 <div className="grid grid-cols-3 gap-2">
                   {artist.recentWorks.slice(0, 3).map((work, index) => (
-                    <img
+                    <Image
                       key={index}
                       src={work || "/placeholder.svg"}
                       alt={`Recent work ${index + 1}`}
+                      width={80}
+                      height={64}
                       className="w-full h-16 object-cover rounded-md"
                     />
                   ))}

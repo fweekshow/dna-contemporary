@@ -32,17 +32,23 @@ export function SwipeGallery({ artworks, onLike, onPass }: SwipeGalleryProps) {
   const currentArtwork = artworks[currentIndex]
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault() // Prevent page scrolling
+    e.stopPropagation() // Stop event bubbling
     setStartX(e.touches[0].clientX)
     setIsDragging(true)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return
+    e.preventDefault() // Prevent page scrolling
+    e.stopPropagation() // Stop event bubbling
     setCurrentX(e.touches[0].clientX - startX)
   }
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (!isDragging) return
+    e.preventDefault() // Prevent page scrolling
+    e.stopPropagation() // Stop event bubbling
     setIsDragging(false)
     
     const threshold = 100
@@ -89,17 +95,17 @@ export function SwipeGallery({ artworks, onLike, onPass }: SwipeGalleryProps) {
   const transform = isDragging ? `translateX(${currentX}px) rotate(${currentX * 0.1}deg)` : ''
 
   return (
-    <div className="relative h-96 max-w-sm mx-auto">
+    <div className="relative h-96 max-w-sm mx-auto touch-none">
       <div
         ref={cardRef}
-        className="absolute inset-0 cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
         style={{ transform }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <Card className="h-full overflow-hidden">
-          <div className="aspect-square bg-gradient-to-br from-purple-900 to-green-900 relative">
+        <Card className="h-full overflow-hidden touch-none">
+          <div className="aspect-square bg-gradient-to-br from-purple-900 to-green-900 relative touch-none">
             <Image 
               src={currentArtwork.image} 
               alt={currentArtwork.title}
