@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Store, Bell, Heart, Users } from "lucide-react"
+import { Upload, Store, Bell, Users } from "lucide-react"
 import Image from "next/image"
 import { 
   useMiniKit, 
@@ -132,12 +132,12 @@ export default function DNAContemporary() {
   }
 
   // Handle swipe actions
-  const handleLike = (artwork: any) => {
+  const handleLike = (artwork: { id: string; title: string; description: string; image: string; price: number; artist: string }) => {
     setLikedArtworks(prev => [...prev, artwork])
     console.log('Liked:', artwork.title)
   }
 
-  const handlePass = (artwork: any) => {
+  const handlePass = (artwork: { id: string; title: string; description: string; image: string; price: number; artist: string }) => {
     console.log('Passed:', artwork.title)
   }
 
@@ -291,7 +291,7 @@ export default function DNAContemporary() {
                     {
                       id: "featured-1",
                       title: "Life After Death",
-                      description: "A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.",
+                      description: 'A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.',
                       image: "/LifeAfterDeath.png",
                       price: 2850,
                       artist: "Contemporary Artist"
@@ -434,7 +434,7 @@ export default function DNAContemporary() {
                   {
                     id: "featured-1",
                     title: "Life After Death",
-                    description: "A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.",
+                    description: 'A striking contemporary piece featuring a neon green skull with crossed spoon and syringe, exploring themes of addiction, mortality, and the fragility of life.',
                     image: "/LifeAfterDeath.png",
                     price: 2850,
                     artist: "Contemporary Artist"

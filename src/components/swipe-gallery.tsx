@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useRef } from "react"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Heart, X, Search } from "lucide-react"
+import { Heart, X } from "lucide-react"
 import Image from "next/image"
 
 interface Artwork {

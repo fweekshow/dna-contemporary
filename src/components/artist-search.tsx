@@ -99,7 +99,7 @@ export function ArtistSearch({ artworks }: ArtistSearchProps) {
 
         {filteredArtists.length === 0 && searchTerm && (
           <p className="text-center text-slate-500 py-4">
-            No artists found matching "{searchTerm}"
+            No artists found matching &quot;{searchTerm}&quot;
           </p>
         )}
       </div>
